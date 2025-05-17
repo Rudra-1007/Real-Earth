@@ -5,19 +5,30 @@ let renderer;
 
 function main()
 {
-    const canvas = document.querySelector('#c');
+    const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
 
+const scene = new THREE.Scene();
+// (Add your camera, lights, and objects here)
 
-    scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+);
+camera.position.z = 2;
 
-    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 2;
-    scene.add(camera);
-
-    renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true,});
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-
+// Handle resize
+window.addEventListener('resize', () => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    renderer.setSize(width, height);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+});
     renderer.autoClear = false;
     renderer.setClearColor(0x00000, 0.0);
 
