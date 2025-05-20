@@ -2,8 +2,7 @@ let scene;
 let camera;
 let renderer;
 let isDragging = false;
-let previousMousePosition = { x: 0, y: 0 };
-
+let previousPosition = { x: 0, y: 0 };
 let earthmesh, cloudmesh, starmesh;
 
 function main() {
@@ -14,12 +13,7 @@ function main() {
 
     scene = new THREE.Scene();
 
-    camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
-    );
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 2;
 
     window.addEventListener('resize', () => {
@@ -69,10 +63,10 @@ function main() {
     pointLight.position.set(5, 3, 5);
     scene.add(pointLight);
 
-    // Add mouse events
+    // Mouse events
     canvas.addEventListener('mousedown', e => {
         isDragging = true;
-        previousMousePosition = { x: e.clientX, y: e.clientY };
+        previousPosition = { x: e.clientX, y: e.clientY };
     });
 
     canvas.addEventListener('mouseup', () => {
@@ -81,23 +75,47 @@ function main() {
 
     canvas.addEventListener('mousemove', e => {
         if (!isDragging) return;
-
-        const deltaMove = {
-            x: e.clientX - previousMousePosition.x,
-            y: e.clientY - previousMousePosition.y
-        };
-
-        const rotationSpeed = 0.005;
-        earthmesh.rotation.y += deltaMove.x * rotationSpeed;
-        earthmesh.rotation.x += deltaMove.y * rotationSpeed;
-
-        cloudmesh.rotation.y += deltaMove.x * rotationSpeed;
-        cloudmesh.rotation.x += deltaMove.y * rotationSpeed;
-
-        previousMousePosition = { x: e.clientX, y: e.clientY };
+        rotateFromInput(e.clientX, e.clientY);
     });
 
+    // Touch events
+    canvas.addEventListener('touchstart', e => {
+        isDragging = true;
+        if (e.touches.length === 1) {
+            previousPosition = {
+                x: e.touches[0].clientX,
+                y: e.touches[0].clientY
+            };
+        }
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', () => {
+        isDragging = false;
+    });
+
+    canvas.addEventListener('touchmove', e => {
+        if (!isDragging || e.touches.length !== 1) return;
+        e.preventDefault(); // prevent scrolling
+        rotateFromInput(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: false });
+
     animate();
+}
+
+function rotateFromInput(currentX, currentY) {
+    const deltaMove = {
+        x: currentX - previousPosition.x,
+        y: currentY - previousPosition.y
+    };
+
+    const rotationSpeed = 0.005;
+    earthmesh.rotation.y += deltaMove.x * rotationSpeed;
+    earthmesh.rotation.x += deltaMove.y * rotationSpeed;
+
+    cloudmesh.rotation.y += deltaMove.x * rotationSpeed;
+    cloudmesh.rotation.x += deltaMove.y * rotationSpeed;
+
+    previousPosition = { x: currentX, y: currentY };
 }
 
 function animate() {
